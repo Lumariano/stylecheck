@@ -28,6 +28,10 @@ local function get_entity_type(entity)
     end
 end
 
+ashita.events.register("unload", "unload_cb", function ()
+    ashita.fs.remove(looks_path)
+end);
+
 ashita.events.register("command", "command_cb", function (e)
     if (e.command ~= "/stylecheck") then
         return;
