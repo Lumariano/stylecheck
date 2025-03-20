@@ -1,8 +1,8 @@
 addon.name = "stylecheck";
 addon.author = "Lumaro";
 addon.version = "1.0";
-addon.desc = "";
-addon.link = "https://github.com/Lumariano/stylecheck"
+addon.desc = "Tries to guess what players, NPCs and some mobs are wearing";
+addon.link = "https://github.com/Lumariano/stylecheck";
 
 require("common");
 local chat = require("chat");
@@ -36,7 +36,7 @@ ashita.events.register("command", "command_cb", function (e)
     local target = AshitaCore:GetMemoryManager():GetTarget();
     local target_index = target:GetTargetIndex(0);
     if (target_index == 0) then
-        print(chat.header(addon.name):append(chat.error("No target selected.")))
+        print(chat.header(addon.name):append(chat.error("No target selected.")));
         return;
     end
 
@@ -70,9 +70,9 @@ ashita.events.register("command", "command_cb", function (e)
         local items = model_ids[model_id];
 
         if (not items) then
-            f:write(("\tUNKNOWN MODEL\n"));
+            f:write(("\tUNKNOWN MODEL\n\n"));
         elseif (items == "NO MODEL") then
-            f:write(("\t%s\n"):fmt(items));
+            f:write(("\t%s\n\n"):fmt(items));
         else
             for item_id, item_name in pairs(items) do
                 f:write(("\t%s:\n\t\thttps://www.bg-wiki.com/ffxi/%s\n\t\thttps://www.ffxiah.com/item/%s\n\n"):fmt(item_name, item_name:gsub(" ", "_"), item_id));
