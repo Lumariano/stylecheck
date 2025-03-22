@@ -21,7 +21,7 @@ local ordered_slots = {
 local looks_path = ("%saddons\\stylecheck\\looks\\"):fmt(AshitaCore:GetInstallPath());
 
 ashita.events.register("unload", "unload_cb", function ()
-    ashita.fs.remove(looks_path)
+    ashita.fs.remove(looks_path);
 end);
 
 ashita.events.register("command", "command_cb", function (e)
@@ -33,14 +33,14 @@ ashita.events.register("command", "command_cb", function (e)
     local target_index = AshitaCore:GetMemoryManager():GetTarget():GetTargetIndex(0);
 
     if (target_index == 0) then
-        print(chat.header(addon.name):append(chat.error("No target selected.")))
+        print(chat.header(addon.name):append(chat.error("No target selected.")));
         return;
     end
 
     local entity = GetEntity(target_index);
 
     if (not entity.Race:within(1, 8)) then
-        print(chat.header(addon.name):append(chat.error("Target >>%s<< will have no look."):fmt(entity.Name)));
+        print(chat.header(addon.name):append(chat.error("Target >>%s<< has no appearance information."):fmt(entity.Name)));
         return;
     end
 
@@ -72,11 +72,11 @@ ashita.events.register("command", "command_cb", function (e)
             for item_id, item_name in pairs(items) do
                 f:write(("\n\n\t%s"):fmt(item_name));
                 f:write(("\n\t\thttps://www.bg-wiki.com/ffxi/%s"):fmt(item_name:gsub(" ", "_")));
-                f:write(("\n\t\thttps://www.ffxiah.com/item/%s"):fmt(item_id))
+                f:write(("\n\t\thttps://www.ffxiah.com/item/%s"):fmt(item_id));
             end
         end
 
-        if (entry ~= #ordered_slots) then
+        if (entry < #ordered_slots) then
             f:write("\n\n");
         end
     end
