@@ -1,32 +1,24 @@
 addon.name = "stylecheck";
 addon.author = "Lumaro";
 addon.version = "1.0";
-addon.desc = "Tries to guess what players, NPCs and some mobs are wearing";
+addon.desc = "Shows you some possibilities for what your target could be wearing.";
 addon.link = "https://github.com/Lumariano/stylecheck";
 
 require("common");
 local chat = require("chat");
 local lsb = require("lsb");
 
+local ordered_slots = {
+    "Main",
+    "Sub",
+    "Ranged",
+    "Head",
+    "Body",
+    "Hands",
+    "Legs",
+    "Feet",
+};
 local looks_path = ("%saddons\\stylecheck\\looks\\"):fmt(AshitaCore:GetInstallPath());
-
-local function get_entity_type(entity)
-    if (entity.SpawnFlags == 0x001) then
-        return "PC";
-    elseif (entity.SpawnFlags == 0x20D) then
-        return "Local PC";
-    elseif (entity.SpawnFlags == 0x010) then
-        return "Mob";
-    elseif (entity.Type == 1) then
-        return "NPC";
-    elseif (entity.Type == 2) then
-        return "Object";
-    elseif (entity.Type == 3) then
-        return "Door";
-    else
-        return "Unknown";
-    end
-end
 
 ashita.events.register("unload", "unload_cb", function ()
     ashita.fs.remove(looks_path)
@@ -37,17 +29,17 @@ ashita.events.register("command", "command_cb", function (e)
         return;
     end
 
-    local target = AshitaCore:GetMemoryManager():GetTarget();
-    local target_index = target:GetTargetIndex(0);
+    e.blocked = true;
+    local target_index = AshitaCore:GetMemoryManager():GetTarget():GetTargetIndex(0);
+
     if (target_index == 0) then
-        print(chat.header(addon.name):append(chat.error("No target selected.")));
+        print(chat.header(addon.name):append(chat.error("No target selected.")))
         return;
     end
 
     local entity = GetEntity(target_index);
 
-    local entity_type = get_entity_type(entity);
-    if (not entity_type:any("PC", "Local PC", "NPC", "Mob")) then
+    if (not entity.Race:within(1, 8)) then
         print(chat.header(addon.name):append(chat.error("Target >>%s<< will have no look."):fmt(entity.Name)));
         return;
     end
@@ -60,31 +52,35 @@ ashita.events.register("command", "command_cb", function (e)
     end
     
     local outfile_path = ("%s%s.txt"):fmt(looks_path, entity.Name);
-
     local f, err = io.open(outfile_path , "w");
+
     if (not f) then
         print(chat.header(addon.name):append(chat.error("Can't create file %s: %s"):fmt(outfile_path, err)));
         return;
     end
 
-    for slot, model_ids in pairs(lsb) do
-        f:write(("%s slot could be:\n"):fmt(slot));
-
+    for entry, slot in ipairs(ordered_slots) do
+        f:write(("---- [%s] %s"):fmt(slot, string.rep("-", 71 - #slot)));
         local model_id = bit.band(entity.Look[slot], 0x0FFF);
-        local items = model_ids[model_id];
+        local items = lsb[slot][model_id];
 
         if (not items) then
-            f:write(("\tUNKNOWN MODEL\n\n"));
-        elseif (items == "NO MODEL") then
-            f:write(("\t%s\n\n"):fmt(items));
+            f:write("\n\n\tUNKNOWN MODEL");
+        elseif (type(items) == "string") then
+            f:write(("\n\n\t%s"):fmt(items));
         else
             for item_id, item_name in pairs(items) do
-                f:write(("\t%s:\n\t\thttps://www.bg-wiki.com/ffxi/%s\n\t\thttps://www.ffxiah.com/item/%s\n\n"):fmt(item_name, item_name:gsub(" ", "_"), item_id));
+                f:write(("\n\n\t%s"):fmt(item_name));
+                f:write(("\n\t\thttps://www.bg-wiki.com/ffxi/%s"):fmt(item_name:gsub(" ", "_")));
+                f:write(("\n\t\thttps://www.ffxiah.com/item/%s"):fmt(item_id))
             end
         end
-        f:write("\n");
-    end
-    f:close();
 
+        if (entry ~= #ordered_slots) then
+            f:write("\n\n");
+        end
+    end
+
+    f:close();
     ashita.misc.execute(outfile_path, "");
 end);
